@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#welcome to polyglot
+#welcome to polyglotit solution
 
 mysql -u root < /opt/db.sql
 
