@@ -1,0 +1,51 @@
+---
+- hosts: db
+  roles:
+    - users
+  tasks:
+    - name: install mariadb server
+      yum: name=mariadb-server state=present
+    
+    - name: start and enable service
+      service: name=mariadb state=started
+    
+    - name: download db.sql
+      get_url: 
+        url: https://raw.githubusercontent.com/demoglot/php/master/db.sql
+        dest: /opt/db.sql
+ 
+    - name: upload mysql.sh
+      copy: src=/root/devops/mysql.sh dest=/opt/mysql.sh
+
+    - name: execute mysql.sh
+      command: bash /opt/mysql.sh
+
+    - lineinfile:
+        dest: /etc/sysconfig/selinux
+        regexp: '^SELINUX='
+        line: 'SELINUX=disabled'
+
+- hosts: web
+  roles:
+    - users
+    - web
+  tasks:
+    - name: start and enable service
+      service: name=httpd state=started
+
+    - name: add group "tomcat"
+      group: name=tomcat
+
+    - name: add user "tomcat"
+      user: name=tomcat group=tomcat home=/usr/share/tomcat createhome=no
+      become: True
+      become_method: sudo
+
+    - name: tomcat user
+      copy: src=/root/devops/roles/templates/tasks/tomcat-users.xml dest=/usr/share/tomcat/conf/
+
+    - name: clone github repo
+      git:  repo=https://github.com/demoglot/php.git dest=/var/www/html
+  
+    - name: upload db.properties
+      copy: src=/root/devops/db.properties dest=/var/www/html/db.properties

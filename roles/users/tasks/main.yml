@@ -1,0 +1,19 @@
+---
+- name: create devops group
+  group: name=devops state=present
+- name: creating users 
+  user: name={{ item }} state=present
+  with_items:
+    - john
+    - matt
+    - chris
+    - suresh
+
+- name: add group "tomcat"
+  group: name=tomcat
+
+- name: add user "tomcat"
+  user: name=tomcat group=tomcat home=/usr/share/tomcat createhome=no
+  become: True
+  become_method: sudo
+
